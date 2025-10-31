@@ -125,4 +125,74 @@ class AppTest {
     String output = outputStream.toString();
     assertTrue(output.contains("System is not logged in to any user"));
   }
+
+  @Test
+  void testTransferValid() {
+    String input = "login chris\ndeposit 100\nlogout\nlogin user2\nlogout\nlogin chris\ntransfer user2 100\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Transfered $100 to user2"));
+  }
+
+  @Test
+  void testTransferNotLoggedInError() {
+    String input = "transfer user2 100\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Error: You must logged in before doing transfer"));
+  }
+
+  @Test
+  void testTransferNegativeValueError() {
+    String input = "login chris\ndeposit 100\nlogout\nlogin user2\nlogout\nlogin chris\ntransfer user2 -100\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Error: Amount should not be lower than 0"));
+  }
+
+  @Test
+  void testTransferToSelfError() {
+    String input = "login chris\ndeposit 100\ntransfer chris 100\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Error: Cannot transfer to self"));
+  }
+
+  @Test
+  void testTransferTargetNotExistError() {
+    String input = "login chris\ndeposit 100\ntransfer user2 100\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Error: Target user does not exist."));
+  }
 }

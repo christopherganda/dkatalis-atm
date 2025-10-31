@@ -19,7 +19,11 @@ public class User {
     return balance;
   }
 
-  public void deposit(BigDecimal amount) {
+  public void addBalance(BigDecimal amount) {
     balance = balance.add(amount);
+  }
+
+  public void subtractBalance(BigDecimal amount) {
+    balance = balance.subtract(amount);
   }
 }

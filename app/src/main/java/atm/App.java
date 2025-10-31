@@ -23,6 +23,7 @@ public class App {
             atm.withdraw(new BigDecimal(params[1]));
             break;
           case "transfer":
+            atm.transfer(params[1], new BigDecimal(params[2]));
             break;
           case "logout":
             atm.logout();
