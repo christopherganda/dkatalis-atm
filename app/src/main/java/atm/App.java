@@ -24,6 +24,7 @@ public class App {
           case "transfer":
             break;
           case "logout":
+            atm.logout();
             break;
           case "exit":
             scanner.close();
