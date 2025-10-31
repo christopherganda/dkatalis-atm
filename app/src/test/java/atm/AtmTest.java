@@ -87,4 +87,62 @@ public class AtmTest {
     Atm atm = new Atm();
     assertThrows(IllegalStateException.class, () -> atm.withdraw(BigDecimal.valueOf(100)));
   }
+
+  @Test
+  void testTransferValid() {
+    Atm atm = new Atm();
+    String user1 = "user1";
+    String user2 = "user2";
+
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertDoesNotThrow(() -> atm.deposit(BigDecimal.valueOf(100)));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user2));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertDoesNotThrow(() -> atm.transfer(user2, BigDecimal.valueOf(100)));
+  }
+
+  @Test
+  void testTransferOutOfBalanceError() {
+    Atm atm = new Atm();
+    String user1 = "user1";
+    String user2 = "user2";
+
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertDoesNotThrow(() -> atm.deposit(BigDecimal.valueOf(100)));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user2));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertThrows(IllegalStateException.class, () -> atm.transfer(user2, BigDecimal.valueOf(105)));
+  }
+
+  @Test
+  void testTransferNegativeValueError() {
+    Atm atm = new Atm();
+    String user1 = "user1";
+    String user2 = "user2";
+
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertDoesNotThrow(() -> atm.deposit(BigDecimal.valueOf(100)));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user2));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertThrows(IllegalArgumentException.class, () -> atm.transfer(user2, BigDecimal.valueOf(-100)));
+  }
+
+  @Test
+  void testTargetedUserNotExistError() {
+    Atm atm = new Atm();
+    String user1 = "user1";
+    String user2 = "user2";
+
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertDoesNotThrow(() -> atm.deposit(BigDecimal.valueOf(100)));
+    assertDoesNotThrow(() -> atm.logout());
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertThrows(IllegalArgumentException.class, () -> atm.transfer(user2, BigDecimal.valueOf(100)));
+  }
 }
