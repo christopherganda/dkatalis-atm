@@ -20,6 +20,7 @@ public class App {
             atm.deposit(new BigDecimal(params[1]));
             break;
           case "withdraw":
+            atm.withdraw(new BigDecimal(params[1]));
             break;
           case "transfer":
             break;

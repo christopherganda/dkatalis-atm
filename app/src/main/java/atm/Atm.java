@@ -43,4 +43,20 @@ public class Atm {
     loggedInUser = null;
     System.out.println("Logout successfully. See you!");
   }
+
+  public void withdraw(BigDecimal amount) {
+    if (loggedInUser == null) {
+      throw new IllegalStateException("You must logged in before doing deposit");
+    }
+
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Amount should not be lower than 0");
+    }
+
+    if (loggedInUser.getBalance().compareTo(amount) < 0) {
+      throw new IllegalStateException("Your remaining balance is " + loggedInUser.getBalance());
+    }
+    loggedInUser.withdraw(amount);
+    System.out.println("Current balance after withdraw: " + loggedInUser.getBalance());
+  }
 }
