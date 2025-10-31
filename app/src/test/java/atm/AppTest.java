@@ -95,4 +95,34 @@ class AppTest {
     String output = outputStream.toString();
     assertTrue(output.contains("Error: You must logged in before doing deposit"));
   }
+
+  @Test
+  void testLogoutValid() {
+    String input = "login chris\nlogout\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Welcome to the ATM system"));
+    assertTrue(output.contains("Successfully logged in as: chris"));
+    assertTrue(output.contains("Logout successfully. See you!"));
+  }
+
+  @Test
+  void testLogoutWithoutLogin() {
+    String input = "logout\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("System is not logged in to any user"));
+  }
 }
