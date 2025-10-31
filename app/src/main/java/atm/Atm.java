@@ -35,4 +35,12 @@ public class Atm {
     loggedInUser.deposit(amount);
     System.out.println("Current balance after deposit: " + loggedInUser.getBalance());
   }
+
+  public void logout() {
+    if (loggedInUser == null) {
+      throw new IllegalStateException("System is not logged in to any user");
+    }
+    loggedInUser = null;
+    System.out.println("Logout successfully. See you!");
+  }
 }
