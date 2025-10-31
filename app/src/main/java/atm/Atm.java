@@ -32,7 +32,7 @@ public class Atm {
       throw new IllegalArgumentException("Amount should not be lower than 0");
     }
 
-    loggedInUser.deposit(amount);
+    loggedInUser.addBalance(amount);
     System.out.println("Current balance after deposit: " + loggedInUser.getBalance());
   }
 
@@ -56,7 +56,7 @@ public class Atm {
     if (loggedInUser.getBalance().compareTo(amount) < 0) {
       throw new IllegalStateException("Your remaining balance is " + loggedInUser.getBalance());
     }
-    loggedInUser.withdraw(amount);
+    loggedInUser.subtractBalance(amount);
     System.out.println("Current balance after withdraw: " + loggedInUser.getBalance());
   }
 }
