@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import util.Formatter;
+
 public class Atm {
   private Map<String, User> users = new HashMap<String, User>();
   private User loggedInUser = null;
@@ -28,7 +30,7 @@ public class Atm {
       throw new IllegalStateException("You must logged in before doing deposit");
     }
 
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+    if (amount.compareTo(BigDecimal.ZERO) < 0) {
       throw new IllegalArgumentException("Amount should not be lower than 0");
     }
 
@@ -49,7 +51,7 @@ public class Atm {
       throw new IllegalStateException("You must logged in before doing deposit");
     }
 
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+    if (amount.compareTo(BigDecimal.ZERO) < 0) {
       throw new IllegalArgumentException("Amount should not be lower than 0");
     }
 
@@ -58,5 +60,33 @@ public class Atm {
     }
     loggedInUser.subtractBalance(amount);
     System.out.println("Current balance after withdraw: " + loggedInUser.getBalance());
+  }
+
+  public void transfer(String receiverUsername, BigDecimal amount) {
+    if (loggedInUser == null) {
+      throw new IllegalStateException("You must logged in before doing transfer");
+    }
+
+    if (amount.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Amount should not be lower than 0");
+    }
+
+    if (receiverUsername.equals(loggedInUser.getUsername())) {
+      throw new IllegalStateException("Cannot transfer to self");
+    }
+
+    User receiver = users.get(receiverUsername);
+    if (receiver == null) {
+      throw new IllegalStateException("Target user does not exist.");
+    }
+
+    BigDecimal currentBalance = loggedInUser.getBalance();
+    if (currentBalance == null || currentBalance.compareTo(amount) < 0) {
+        throw new IllegalStateException("Insufficient balance for the transfer.");
+    }
+
+    loggedInUser.subtractBalance(amount);
+    receiver.addBalance(amount);
+    System.out.println("Transfered " + Formatter.formatCurrencyWithoutComma(amount) + " to " + receiverUsername);
   }
 }
