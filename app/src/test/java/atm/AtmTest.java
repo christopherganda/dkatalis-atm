@@ -145,4 +145,14 @@ public class AtmTest {
     assertDoesNotThrow(() -> atm.login(user1));
     assertThrows(IllegalArgumentException.class, () -> atm.transfer(user2, BigDecimal.valueOf(100)));
   }
+
+  @Test
+  void testTransferToSelfError() {
+    Atm atm = new Atm();
+    String user1 = "user1";
+
+    assertDoesNotThrow(() -> atm.login(user1));
+    assertDoesNotThrow(() -> atm.deposit(BigDecimal.valueOf(100)));
+    assertThrows(IllegalStateException.class, () -> atm.transfer(user1, BigDecimal.valueOf(100)));
+  }
 }
