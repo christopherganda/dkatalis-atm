@@ -104,6 +104,13 @@ public class AtmTest {
   }
 
   @Test
+  void testTransferNotLoggedInError() {
+    Atm atm = new Atm();
+
+    assertThrows(IllegalStateException.class, () -> atm.transfer("user2", BigDecimal.valueOf(100)));
+  }
+
+  @Test
   void testTransferNegativeValueError() {
     Atm atm = new Atm();
     String user1 = "user1";
@@ -119,7 +126,7 @@ public class AtmTest {
   }
 
   @Test
-  void testTargetedUserNotExistError() {
+  void testTransferTargetedUserNotExistError() {
     Atm atm = new Atm();
     String user1 = "user1";
     String user2 = "user2";
@@ -128,7 +135,7 @@ public class AtmTest {
     assertDoesNotThrow(() -> atm.deposit(BigDecimal.valueOf(100)));
     assertDoesNotThrow(() -> atm.logout());
     assertDoesNotThrow(() -> atm.login(user1));
-    assertThrows(IllegalArgumentException.class, () -> atm.transfer(user2, BigDecimal.valueOf(100)));
+    assertThrows(IllegalStateException.class, () -> atm.transfer(user2, BigDecimal.valueOf(100)));
   }
 
   @Test
