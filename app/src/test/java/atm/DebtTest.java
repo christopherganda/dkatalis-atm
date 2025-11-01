@@ -29,4 +29,3 @@ public class DebtTest {
     assertEquals(BigDecimal.ZERO, debt.getAmount());
   }
 }
-
