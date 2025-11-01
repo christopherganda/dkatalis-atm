@@ -82,7 +82,7 @@ public class Atm {
       User userOwedTo = users.get(debt.getUsername());
       // If amount is greater than debt amount, we settle all the debt
       // else we deduct the debt according to amount
-      if (amount.compareTo(debt.getAmount()) > 0) {
+      if (amount.compareTo(debt.getAmount()) >= 0) {
         amount = amount.subtract(debt.getAmount());
         userOwedTo.deductOrRemoveOwedBy(loggedInUser.getUsername(), debt.getAmount());
         userOwedTo.addBalance(debt.getAmount());
