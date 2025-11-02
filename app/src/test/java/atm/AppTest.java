@@ -197,4 +197,73 @@ class AppTest {
     String output = outputStream.toString();
     assertTrue(output.contains(ERR_USER_NOT_FOUND));
   }
+
+  @Test
+  void testDepositSettlesOweDebt() {
+    String input = "login alice\ndeposit 50\nlogout\nlogin bob\nlogout\nlogin alice\ntransfer bob 100\nlogout\nlogin alice\ndeposit 60\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Transferred"));
+    assertTrue(output.contains("Your balance is"));
+  }
+
+  @Test
+  void testMultipleOweFifoSettledByDeposit() {
+    String input = "login alice\ndeposit 50\nlogout\nlogin bob\nlogout\nlogin charlie\nlogout\nlogin alice\ntransfer bob 70\ntransfer charlie 80\nlogout\nlogin alice\ndeposit 100\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Owed $20 to bob"));
+    assertTrue(output.contains("Owed $80 to charlie"));
+    assertTrue(output.contains("Transferred $20 to bob"));
+    assertTrue(output.contains("Transferred $80 to charlie"));
+    assertTrue(output.contains("Your balance is $0"));
+  }
+
+  @Test
+  void testTransferWhenOwedByReceiver() {
+    String input = "login alice\ndeposit 20\nlogout\nlogin bob\nlogout\nlogin alice\ntransfer bob 50\nlogout\nlogin bob\ndeposit 100\ntransfer alice 30\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Transferred $20 to bob"));
+    assertTrue(output.contains("Your balance is $0"));
+    assertTrue(output.contains("Owed $30 to bob"));
+    assertTrue(output.contains("Owed $30 from alice"));
+    assertTrue(output.contains("Your balance is $120"));
+  }
+
+  @Test
+  void testCompleteDebtSettlementFlow() {
+    String input = "login alice\ndeposit 50\nlogout\nlogin bob\nlogout\nlogin alice\ntransfer bob 100\ndeposit 100\nlogout\nlogin bob\nexit\n";
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    System.setIn(inputStream);
+    System.setOut(new PrintStream(outputStream));
+
+    App.main(new String[]{});
+    String output = outputStream.toString();
+    assertTrue(output.contains("Transferred $50 to bob"));
+    assertTrue(output.contains("Your balance is $0"));
+    assertTrue(output.contains("Owed $50 to bob"));
+    assertTrue(output.contains("Transferred $50 to bob"));
+    assertTrue(output.contains("Your balance is $0"));
+  }
 }
