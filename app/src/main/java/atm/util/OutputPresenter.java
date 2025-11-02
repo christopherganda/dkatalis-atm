@@ -6,6 +6,8 @@ import java.util.Map;
 import atm.model.User;
 
 public final class OutputPresenter {
+  private OutputPresenter() {}
+
   public static void printWelcome() {
     System.out.println("Welcome to the ATM system");
   }

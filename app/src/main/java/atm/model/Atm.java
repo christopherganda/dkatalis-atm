@@ -5,22 +5,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
+import atm.service.ValidationService;
 import atm.util.OutputPresenter;
 
 public class Atm {
   private Map<String, User> users = new HashMap<String, User>();
   private User loggedInUser = null;
 
-  private static final String ERR_NO_USER_LOGGED_IN = "You must be logged in to perform this action.";
-  private static final String ERR_INVALID_AMOUNT = "Amount should be greater than or equal to 0.";
-  private static final String ERR_INVALID_USERNAME = "Username cannot be empty";
-  private static final String ERR_SELF_TRANSFER = "Cannot transfer to self.";
   private static final String ERR_USER_NOT_FOUND = "Target user does not exist.";
 
   // improvement: how to handle concurrent requests
   public void login(String username) {
-    validateUsername(username);
-    validateMultipleLoginAttempt();
+    ValidationService.validateUsername(username);
+    ValidationService.validateMultipleLogin(loggedInUser);
     
     users.putIfAbsent(username, new User(username));
     loggedInUser = users.get(username);
@@ -29,8 +26,8 @@ public class Atm {
   }
 
   public void deposit(BigDecimal amount) {
-    validateLoggedIn();
-    validateAmount(amount);
+    ValidationService.validateLoggedIn(loggedInUser);
+    ValidationService.validateAmount(amount);
 
     amount = processDepositOwes(amount);
     loggedInUser.addBalance(amount);
@@ -38,8 +35,8 @@ public class Atm {
   }
 
   public void withdraw(BigDecimal amount) {
-    validateLoggedIn();
-    validateAmount(amount);
+    ValidationService.validateLoggedIn(loggedInUser);
+    ValidationService.validateAmount(amount);
 
     if (loggedInUser.getBalance().compareTo(amount) < 0) {
       throw new IllegalStateException("Your remaining balance is " + loggedInUser.getBalance());
@@ -53,9 +50,9 @@ public class Atm {
   // 1. if loggedInUser is owed by the targetUser, if yes we need to adjust the owes and owed, if amount has remaining, we deduct loggedInUser's balance
   // 2. if loggedInUser is not owed by targetUser, we deduct loggedInUser's balance, if amount is greater than balance, then we need to add owes and owed to
   public void transfer(String receiverUsername, BigDecimal amount) {
-    validateLoggedIn();
-    validateAmount(amount);
-    validateSelfTransfer(receiverUsername);
+    ValidationService.validateLoggedIn(loggedInUser);
+    ValidationService.validateAmount(amount);
+    ValidationService.validateSelfTransfer(loggedInUser, receiverUsername);
 
     User receiver = getUser(receiverUsername);
     BigDecimal remainingAmount = processTransferOwedBy(receiver, amount);
@@ -64,9 +61,7 @@ public class Atm {
   }
 
   public void logout() {
-    if (loggedInUser == null) {
-      throw new IllegalStateException(ERR_NO_USER_LOGGED_IN);
-    }
+    ValidationService.validateLoggedIn(loggedInUser);
     OutputPresenter.printLogoutGreeting(loggedInUser.getUsername());
     loggedInUser = null;
   }
@@ -162,37 +157,7 @@ public class Atm {
       }
     }
   }
-
-  private void validateUsername(String username) {
-    if (username == null || username.isBlank()) {
-      throw new IllegalArgumentException(ERR_INVALID_USERNAME);
-    }
-  }
-
-  private void validateMultipleLoginAttempt() {
-    if (loggedInUser != null) {
-      throw new IllegalStateException("Currently logged in as: " + loggedInUser);
-    }
-  }
-
-  private void validateLoggedIn() {
-    if (loggedInUser == null) {
-      throw new IllegalStateException(ERR_NO_USER_LOGGED_IN);
-    }
-  }
-
-  private void validateAmount(BigDecimal amount) {
-    if (amount.compareTo(BigDecimal.ZERO) < 0) {
-      throw new IllegalArgumentException(ERR_INVALID_AMOUNT);
-    }
-  }
   
-  private void validateSelfTransfer(String receiverUsername) {
-    if (loggedInUser.getUsername().equals(receiverUsername)) {
-      throw new IllegalStateException(ERR_SELF_TRANSFER);
-    }
-  }
-
   private User getUser(String username) {
     User user = users.get(username);
     if (user == null) {
