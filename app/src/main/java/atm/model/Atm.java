@@ -204,7 +204,7 @@ public class Atm {
   }
   
   private void validateSelfTransfer(String receiverUsername) {
-    if (receiverUsername.equals(loggedInUser.getUsername())) {
+    if (loggedInUser.getUsername().equals(receiverUsername)) {
       throw new IllegalStateException(ERR_SELF_TRANSFER);
     }
   }
