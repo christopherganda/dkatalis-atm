@@ -1,4 +1,4 @@
-package atm;
+package atm.model;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import util.Formatter;
+import atm.util.Formatter;
 
 public class User {
   private String username;
@@ -66,6 +66,10 @@ public class User {
   // Meaning: This user is owed by {username}
   // if amount is <= 0, remove from owed by
   public void deductOrRemoveOwedBy(String username, BigDecimal amount) {
+    if (!owedBy.containsKey(username)) {
+      return;
+    }
+
     owedBy.put(username, owedBy.get(username).subtract(amount));
     if (owedBy.get(username).compareTo(BigDecimal.ZERO) <= 0) {
       owedBy.remove(username);

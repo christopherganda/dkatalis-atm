@@ -1,13 +1,16 @@
-package atm;
+package atm.app;
 
 import java.math.BigDecimal;
 import java.util.Scanner;
+
+import atm.model.Atm;
+import atm.util.OutputPresenter;
 
 public class App {
   public static void main(String[] args) {
     Scanner scanner = new Scanner(System.in);
     Atm atm = new Atm();
-    System.out.println("Welcome to the ATM system");
+    OutputPresenter.printWelcome();
     while (true) {
       String input = scanner.nextLine().trim();
       String[] params = input.split(" ");
@@ -32,11 +35,11 @@ public class App {
             scanner.close();
             return;
           default:
-            System.out.println("Invalid command");
+            OutputPresenter.printInvalidCommand();
             break;
         }
       } catch (Exception e) {
-        System.out.println("Error: " + e.getMessage());
+        OutputPresenter.printError(e.getMessage());
       }
     }
   }
