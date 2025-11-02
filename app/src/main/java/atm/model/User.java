@@ -66,6 +66,10 @@ public class User {
   // Meaning: This user is owed by {username}
   // if amount is <= 0, remove from owed by
   public void deductOrRemoveOwedBy(String username, BigDecimal amount) {
+    if (!owedBy.containsKey(username)) {
+      return;
+    }
+
     owedBy.put(username, owedBy.get(username).subtract(amount));
     if (owedBy.get(username).compareTo(BigDecimal.ZERO) <= 0) {
       owedBy.remove(username);
