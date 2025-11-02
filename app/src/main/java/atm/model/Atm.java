@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
-import atm.util.Formatter;
+import atm.util.OutputPresenter;
 
 public class Atm {
   private Map<String, User> users = new HashMap<String, User>();
@@ -24,8 +24,8 @@ public class Atm {
     
     users.putIfAbsent(username, new User(username));
     loggedInUser = users.get(username);
-    System.out.printf("Hello, %s!\n", loggedInUser.getUsername());
-    printYourBalance();
+    OutputPresenter.printLoginGreeting(username);
+    OutputPresenter.printBalance(loggedInUser);
   }
 
   public void deposit(BigDecimal amount) {
@@ -34,7 +34,7 @@ public class Atm {
 
     amount = processDepositOwes(amount);
     loggedInUser.addBalance(amount);
-    printYourBalance();
+    OutputPresenter.printBalance(loggedInUser);
   }
 
   public void withdraw(BigDecimal amount) {
@@ -46,7 +46,7 @@ public class Atm {
     }
 
     loggedInUser.subtractBalance(amount);
-    printYourBalance();
+    OutputPresenter.printBalance(loggedInUser);
   }
 
   // There are 2 cases for transfer
@@ -60,14 +60,14 @@ public class Atm {
     User receiver = getUser(receiverUsername);
     BigDecimal remainingAmount = processTransferOwedBy(receiver, amount);
     processBalanceTransfer(receiver, remainingAmount);
-    printYourBalance();
+    OutputPresenter.printBalance(loggedInUser);
   }
 
   public void logout() {
     if (loggedInUser == null) {
       throw new IllegalStateException(ERR_NO_USER_LOGGED_IN);
     }
-    System.out.printf("Goodbye, %s!\n", loggedInUser.getUsername());
+    OutputPresenter.printLogoutGreeting(loggedInUser.getUsername());
     loggedInUser = null;
   }
 
@@ -86,13 +86,13 @@ public class Atm {
         amount = amount.subtract(debt.getAmount());
         userOwedTo.deductOrRemoveOwedBy(loggedInUser.getUsername(), debt.getAmount());
         userOwedTo.addBalance(debt.getAmount());
-        printTransferredToMsg(debt.getUsername(), debt.getAmount());
+        OutputPresenter.printTransfer(debt.getUsername(), debt.getAmount());
         owedTo.poll();
       } else {
         debt.reduceAmount(amount);
         userOwedTo.deductOrRemoveOwedBy(loggedInUser.getUsername(), amount);
         userOwedTo.addBalance(amount);
-        printTransferredToMsg(debt.getUsername(), amount);
+        OutputPresenter.printTransfer(debt.getUsername(), amount);
         amount = BigDecimal.ZERO;
       }
     }
@@ -141,14 +141,14 @@ public class Atm {
       if (senderBalance.compareTo(remainingAmount) >= 0) {
         loggedInUser.subtractBalance(remainingAmount);
         receiver.addBalance(remainingAmount);
-        printTransferredToMsg(receiverUsername, remainingAmount);
+        OutputPresenter.printTransfer(receiverUsername, remainingAmount);
       } else {
         BigDecimal overBalance = remainingAmount.subtract(senderBalance);
         loggedInUser.subtractBalance(senderBalance);
         receiver.addBalance(senderBalance);
         receiver.addOwedBy(loggedInUser.getUsername(), overBalance);
         loggedInUser.addOwesTo(receiverUsername, overBalance);
-        printTransferredToMsg(receiverUsername, senderBalance);
+        OutputPresenter.printTransfer(receiverUsername, senderBalance);
       }
     }
   }
@@ -161,22 +161,6 @@ public class Atm {
         owesTo.offer(debt);
       }
     }
-  }
-
-  private void printYourBalance() {
-    System.out.printf("Your balance is %s\n", loggedInUser.getBalanceString());
-
-    for(Map.Entry<String, BigDecimal> entry : loggedInUser.getOwesToMap().entrySet()) {
-      System.out.printf("Owed %s to %s\n", Formatter.formatCurrencyWithoutComma(entry.getValue()), entry.getKey());
-    }
-
-    for (Map.Entry<String, BigDecimal> entry : loggedInUser.getOwedBy().entrySet()) {
-      System.out.printf("Owed %s from %s\n", Formatter.formatCurrencyWithoutComma(entry.getValue()), entry.getKey());
-    }
-  }
-
-  private void printTransferredToMsg(String username, BigDecimal amount) {
-    System.out.printf("Transferred %s to %s\n", Formatter.formatCurrencyWithoutComma(amount), username);
   }
 
   private void validateUsername(String username) {
