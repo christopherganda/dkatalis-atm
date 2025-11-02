@@ -56,10 +56,6 @@ public class DebtService {
       BigDecimal debtAmount = owedBy.get(receiverUsername);
       Queue<Debt> owesTo = receiver.getOwesTo();
 
-      // If transfer amount is greater than the debt, we will
-      // remove owedBy and from queue, remaining amount will deduct balance
-      // If transfer amount is lower than owedBy debt,
-      // we will deduct debtAmount from owedBy and queue.
       if (amount.compareTo(debtAmount) >= 0) {
         // Transfer amount covers or exceed debt
         amount = amount.subtract(debtAmount);
@@ -68,12 +64,7 @@ public class DebtService {
       } else {
         // Transfer amount is less than debt
         owedBy.put(receiverUsername, debtAmount.subtract(amount));
-        for (Debt debt : owesTo) {
-          if (debt.getUsername().equals(sender.getUsername())) {
-            debt.reduceAmount(amount);
-            break;
-          }
-        }
+        reduceDebtInQueue(owesTo, sender.getUsername(), amount);
         amount = BigDecimal.ZERO;
       }
     }
@@ -90,5 +81,13 @@ public class DebtService {
       }
     }
   }
-  
+
+  private void reduceDebtInQueue(Queue<Debt> owesTo, String username, BigDecimal amount) {
+    for (Debt debt : owesTo) {
+      if (debt.getUsername().equals(username)) {
+        debt.reduceAmount(amount);
+        break;
+      }
+    }
+  }
 }
