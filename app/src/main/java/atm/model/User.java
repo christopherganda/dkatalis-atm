@@ -1,4 +1,4 @@
-package atm;
+package atm.model;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import util.Formatter;
+import atm.util.Formatter;
 
 public class User {
   private String username;

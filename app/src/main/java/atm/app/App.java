@@ -1,7 +1,9 @@
-package atm;
+package atm.app;
 
 import java.math.BigDecimal;
 import java.util.Scanner;
+
+import atm.model.Atm;
 
 public class App {
   public static void main(String[] args) {

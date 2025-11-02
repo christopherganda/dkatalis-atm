@@ -1,4 +1,4 @@
-package util;
+package atm.util;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
