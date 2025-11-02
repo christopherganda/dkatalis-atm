@@ -16,7 +16,7 @@ Notes: We are not allowed to use any third-party frameworks, so we will optimize
   2. Write: The write process has to be fast and handles race condition.
   3. Resizing: If we only utilize data structure, that means the DS has to be optimal to resize.
 ### 2. Deposit
-  Logged in user can deposit any amounts.<br />
+  Logged in user can deposit any amounts. If the user owes another user, this will be prioritized before going to balance.<br />
   Command: `deposit [amount]`<br />
 #### Key Consideration
 
@@ -26,7 +26,7 @@ Notes: We are not allowed to use any third-party frameworks, so we will optimize
 #### Key Consideration
 
 ### 4. Transfer
-  Logged in user can transfer to other valid user with maximum of the user's balance.<br />
+  Logged in user can transfer to other valid user. If the amount is greater than balance, the sender will owe the receiver. <br />
   Command: `transfer [name] [amount]`<br />
 #### Key Consideration
 
