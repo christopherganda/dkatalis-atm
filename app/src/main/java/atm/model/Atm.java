@@ -9,6 +9,7 @@ import atm.service.ValidationService;
 import atm.util.OutputPresenter;
 
 public class Atm {
+  // use repository for better approach and concurrenthashmap for better concurrency handling on thread-safe scenario
   private Map<String, User> users = new HashMap<String, User>();
   private User loggedInUser = null;
   private final DebtService debtSerivce;
@@ -52,7 +53,7 @@ public class Atm {
   }
 
   // There are 2 cases for transfer
-  // 1. if loggedInUser is owed by the targetUser, if yes we need to adjust the owes and owed, if amount has remaining, we deduct loggedInUser's balance
+  // 1. if loggedInUser is owed by the targetUser, we need to adjust the owes and owed, if amount has remaining, we deduct loggedInUser's balance
   // 2. if loggedInUser is not owed by targetUser, we deduct loggedInUser's balance, if amount is greater than balance, then we need to add owes and owed to
   public void transfer(String receiverUsername, BigDecimal amount) {
     ValidationService.validateLoggedIn(loggedInUser);
