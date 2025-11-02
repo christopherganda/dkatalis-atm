@@ -3,16 +3,21 @@ package atm.model;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
 
+import atm.service.DebtService;
 import atm.service.ValidationService;
 import atm.util.OutputPresenter;
 
 public class Atm {
   private Map<String, User> users = new HashMap<String, User>();
   private User loggedInUser = null;
+  private final DebtService debtSerivce;
 
   private static final String ERR_USER_NOT_FOUND = "Target user does not exist.";
+
+  public Atm() {
+    this.debtSerivce = new DebtService(users);
+  }
 
   // improvement: how to handle concurrent requests
   public void login(String username) {
@@ -29,8 +34,8 @@ public class Atm {
     ValidationService.validateLoggedIn(loggedInUser);
     ValidationService.validateAmount(amount);
 
-    amount = processDepositOwes(amount);
-    loggedInUser.addBalance(amount);
+    BigDecimal remaining = debtSerivce.settleDebts(loggedInUser, amount);
+    loggedInUser.addBalance(remaining);
     OutputPresenter.printBalance(loggedInUser);
   }
 
@@ -55,7 +60,7 @@ public class Atm {
     ValidationService.validateSelfTransfer(loggedInUser, receiverUsername);
 
     User receiver = getUser(receiverUsername);
-    BigDecimal remainingAmount = processTransferOwedBy(receiver, amount);
+    BigDecimal remainingAmount = debtSerivce.settleOwedAmount(loggedInUser, receiver, amount);
     processBalanceTransfer(receiver, remainingAmount);
     OutputPresenter.printBalance(loggedInUser);
   }
@@ -64,65 +69,6 @@ public class Atm {
     ValidationService.validateLoggedIn(loggedInUser);
     OutputPresenter.printLogoutGreeting(loggedInUser.getUsername());
     loggedInUser = null;
-  }
-
-  // Private Helpers
-  // Iterate loggedInUser.getOwesTo
-  // then deduct amount based on queue
-  // or remove from queue if amount is greater than owes amount.
-  private BigDecimal processDepositOwes(BigDecimal amount) {
-    Queue<Debt> owedTo = loggedInUser.getOwesTo();
-    while(!owedTo.isEmpty() && amount.compareTo(BigDecimal.ZERO) > 0) {
-      Debt debt = owedTo.peek();
-      User userOwedTo = users.get(debt.getUsername());
-      // If amount is greater than debt amount, we settle all the debt
-      // else we deduct the debt according to amount
-      if (amount.compareTo(debt.getAmount()) >= 0) {
-        amount = amount.subtract(debt.getAmount());
-        userOwedTo.deductOrRemoveOwedBy(loggedInUser.getUsername(), debt.getAmount());
-        userOwedTo.addBalance(debt.getAmount());
-        OutputPresenter.printTransfer(debt.getUsername(), debt.getAmount());
-        owedTo.poll();
-      } else {
-        debt.reduceAmount(amount);
-        userOwedTo.deductOrRemoveOwedBy(loggedInUser.getUsername(), amount);
-        userOwedTo.addBalance(amount);
-        OutputPresenter.printTransfer(debt.getUsername(), amount);
-        amount = BigDecimal.ZERO;
-      }
-    }
-    return amount;
-  }
-
-  private BigDecimal processTransferOwedBy(User receiver, BigDecimal amount) {
-    Map<String, BigDecimal> owedBy = loggedInUser.getOwedBy();
-    String receiverUsername = receiver.getUsername();
-
-    if (owedBy.containsKey(receiverUsername)) {
-      BigDecimal debtAmount = owedBy.get(receiverUsername);
-      Queue<Debt> owesTo = receiver.getOwesTo();
-
-      // If transfer amount is greater than the owedBy debt, we will
-      // remove owedBy and from queue, remaining amount will deduct balance
-      // If transfer amount is lower than owedBy debt,
-      // we will deduct debtAmount from owedBy and queue.
-      if (amount.compareTo(debtAmount) >= 0) {
-        amount = amount.subtract(debtAmount);
-        owedBy.remove(receiverUsername);
-        removeDebtFromQueue(owesTo, loggedInUser.getUsername());
-      } else {
-        owedBy.put(receiverUsername, debtAmount.subtract(amount));
-        for (Debt debt : owesTo) {
-          if (debt.getUsername().equals(loggedInUser.getUsername())) {
-            debt.reduceAmount(amount);
-            break;
-          }
-        }
-        amount = BigDecimal.ZERO;
-      }
-    }
-
-    return amount;
   }
 
   // If senderBalance is greater than remaining amount to be transferred,
@@ -148,16 +94,6 @@ public class Atm {
     }
   }
 
-  private void removeDebtFromQueue(Queue<Debt> owesTo, String username) {
-    int size = owesTo.size();
-    for (int i = 0; i < size; i++) {
-      Debt debt = owesTo.poll();
-      if (!debt.getUsername().equals(username)) {
-        owesTo.offer(debt);
-      }
-    }
-  }
-  
   private User getUser(String username) {
     User user = users.get(username);
     if (user == null) {
